@@ -1,0 +1,177 @@
+syntax = "proto3";
+
+// ═══════════════════════════════════════════════════════════
+// 抖音 IM 私信 protobuf 消息定义
+// 来源: Douyin_Spider upstream (cvv-cat)
+// ═══════════════════════════════════════════════════════════
+
+// ── 通用扩展键值对 ──
+message ExtValue {
+    string key = 1;
+    string value = 2;
+}
+
+// ── 令牌信息 ──
+message TokenInfo {
+    int32 mark_id = 1;
+    int32 type = 2;
+    int32 app_id = 3;
+    int64 user_id = 4;
+    int64 timestamp = 5;
+}
+
+// ── 引用消息信息 ──
+message ReferencedMessageInfo {
+    int64 original_message_id = 1;
+    string original_message_sender = 2;
+    int64 original_message_timestamp = 3;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 外层请求
+// ═══════════════════════════════════════════════════════════
+
+message Request {
+    int32 cmd = 1;
+    int64 sequence_id = 2;
+    string sdk_version = 3;
+    string token = 4;
+    int32 refer = 5;
+    int64 inbox_type = 6;
+    string build_number = 7;
+    RequestBody body = 8;
+    string device_id = 9;
+    string channel = 10;
+    string device_platform = 11;
+    string device_type = 12;
+    string os_version = 13;
+    string version_code = 14;
+    map<string, string> headers = 15;
+    int32 config_id = 16;
+    TokenInfo token_info = 17;
+    int32 auth_type = 18;
+    string biz = 21;
+    string access = 22;
+    string ts_sign = 23;
+    string sdk_cert = 24;
+    string reuqest_sign = 25;
+}
+
+message RequestBody {
+    oneof body {
+        SendMessageRequestBody send_message_body = 100;
+        CreateConversationV2RequestBody create_conversation_v2_body = 609;
+        GetConversationInfoListV2RequestBody get_conversation_info_list_v2_body = 610;
+    }
+}
+
+// ── 发送消息请求 ──
+message SendMessageRequestBody {
+    string conversation_id = 1;
+    int32 conversation_type = 2;
+    int64 conversation_short_id = 3;
+    string content = 4;
+    repeated ExtValue ext = 5;
+    int32 message_type = 6;
+    string ticket = 7;
+    string client_message_id = 8;
+    repeated int64 mentioned_users = 9;
+    bool ignore_badge_count = 10;
+    ReferencedMessageInfo ref_msg_info = 11;
+}
+
+// ── 创建会话请求 ──
+message CreateConversationV2RequestBody {
+    int32 conversation_type = 1;
+    repeated int64 participants = 2;
+    bool persistent = 3;
+    string idempotent_id = 4;
+    string name = 5;
+    string avatar_url = 6;
+    string description = 7;
+    map<string, string> biz_ext = 8;
+}
+
+// ── 获取会话列表请求 ──
+message GetConversationInfoListV2RequestBody {
+    GetConversationInfoListV2ResponseBodyData data = 1;
+}
+
+message GetConversationInfoListV2ResponseBodyData {
+    string conversation_id = 1;
+    int64 conversation_short_id = 2;
+    int32 conversation_type = 3;
+}
+
+// ═══════════════════════════════════════════════════════════
+// 外层响应
+// ═══════════════════════════════════════════════════════════
+
+message Response {
+    int32 cmd = 1;
+    int64 sequence_id = 2;
+    string error_desc = 3;
+    string message = 4;
+    int64 inbox_type = 5;
+    ResponseBody body = 6;
+}
+
+message ResponseBody {
+    oneof body {
+        NewMessageNotify new_message_notify = 500;
+        GetConversationInfoListV2ResponseBody create_conversation_v2_body = 609;
+        GetConversationInfoListV2ResponseBody get_conversation_info_list_v2_response_body = 610;
+    }
+}
+
+// ── 新消息通知（WebSocket 推送）──
+message NewMessageNotify {
+    string conversation_id = 2;
+    int32 conversation_type = 3;
+    int32 notify_type = 4;
+    MessageBody message = 5;
+}
+
+message MessageBody {
+    string conversation_id = 1;
+    int32 conversation_type = 2;
+    int64 server_message_id = 3;
+    int64 index_in_conversation = 4;
+    int64 conversation_short_id = 5;
+    int32 message_type = 6;
+    int64 sender = 7;
+    string content = 8;
+}
+
+// ── 会话列表响应 ──
+message GetConversationInfoListV2ResponseBody {
+    repeated GetConversationInfoV2Response conversation_info_list = 1;
+}
+
+message GetConversationInfoV2Response {
+    string conversation_id = 1;
+    int64 conversation_short_id = 2;
+    int32 conversation_type = 3;
+    string ticket = 4;
+}
+
+// ═══════════════════════════════════════════════════════════
+// WebSocket PushFrame（Live.proto）
+// ═══════════════════════════════════════════════════════════
+
+message PushHeadersList {
+    string key = 1;
+    string value = 2;
+}
+
+message PushFrame {
+    uint64 seqId = 1;
+    uint64 logId = 2;
+    uint64 service = 3;
+    uint64 method = 4;
+    repeated PushHeadersList headersList = 5;
+    string payloadEncoding = 6;
+    string payloadType = 7;
+    bytes payload = 8;
+    string logIdNew = 9;
+}

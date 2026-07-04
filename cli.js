@@ -8,6 +8,7 @@ const fs = require('fs');
 const path = require('path');
 const { AuditLogger } = require('./lib/audit');
 const { BridgeClient } = require('./lib/client/bridge-client');
+const { safeSerialize } = require('./lib/shared/serialize');
 const commands = require('./lib/commands');
 const { SITE } = require('./lib/commands/helpers');
 
@@ -114,6 +115,9 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js dedup "<候选回复文本>"                  检查文本是否曾经发过
   node cli.js replied                                已回复 cid 列表（--json --aweme <id>）
   node cli.js replied --count                        已回复总数
+  node cli.js dm send <user_id> "内容"            发送私信
+  node cli.js dm listen [--timeout N]              监听收到的私信
+  node cli.js dm list                              查看最近收到的消息
 
   通用选项： --raw（原始输出） --no-log（本次不记录日志）
 
@@ -150,7 +154,7 @@ async function main() {
   try {
     const result = await handler(ctx, args.slice(1));
     if (result !== undefined) {
-      console.log(JSON.stringify(result, null, 2));
+      console.log(JSON.stringify(safeSerialize(result), null, 2));
     }
   } catch (e) {
     if (!noLog && audit._currentOp) {

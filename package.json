@@ -22,6 +22,8 @@
     "ws": "^8.18.0"
   },
   "devDependencies": {
+    "protobufjs": "^8.6.4",
+    "protobufjs-cli": "^2.5.5",
     "vitest": "^4.1.8"
   }
 }

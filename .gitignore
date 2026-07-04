@@ -14,3 +14,6 @@ reply-strategy.md
 downloads/
 
 用户配置.md
+# 运行时产物
+*.log
+*.bak

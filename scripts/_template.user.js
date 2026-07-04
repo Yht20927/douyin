@@ -43,7 +43,10 @@
 
   function safeSerialize(value) {
     try {
-      return JSON.parse(JSON.stringify(value === undefined ? null : value));
+      // 处理 BigInt：将 BigInt 转换为字符串
+      return JSON.parse(JSON.stringify(value === undefined ? null : value, (key, val) => {
+        return typeof val === 'bigint' ? val.toString() : val;
+      }));
     } catch(e) { return null; }
   }
 
