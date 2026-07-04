@@ -118,6 +118,7 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js dm send <user_id> "内容"            发送私信
   node cli.js dm listen [--timeout N]              监听收到的私信
   node cli.js dm list                              查看最近收到的消息
+  node cli.js cleanup [--days 90] [--dry-run]      清理过期记忆（events/comments/corpus）
 
   通用选项： --raw（原始输出） --no-log（本次不记录日志）
 
