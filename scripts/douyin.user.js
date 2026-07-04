@@ -887,7 +887,10 @@ async function bridgeFetchJson(label, url, init, readOnly){
       throw new Error('['+label+'] 服务器返回空响应 (HTTP 200, content-type: ' + ct + ') — 可能被限流或登录态失效');
     }
     try {
-      return JSON.parse(text);
+      // reviver：防御 19 位 cid/aweme_id/uid 若以 JSON number 返回时精度丢失，转字符串
+      return JSON.parse(text, function(k, v) {
+        return (typeof v === 'number' && Number.isInteger(v) && !Number.isSafeInteger(v)) ? String(v) : v;
+      });
     } catch (parseErr) {
       // 非 JSON：通常是 HTML 风控/登录页
       var snippet2 = text.length > 200 ? text.substring(0,200) + '...' : text;
