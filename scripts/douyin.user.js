@@ -4,6 +4,8 @@
 // @match        *://*.douyin.com/*
 // @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
+// @grant        GM_getValue
+// @grant        GM_setValue
 // @connect      127.0.0.1
 // ==/UserScript==
 
@@ -19,7 +21,9 @@
   const CONFIG = {
     server: 'http://127.0.0.1:19422',
     site: 'douyin.com',
-    token: '096c1715be805831a142fcea288b42675833bb3bed8bf50c',  // 填入 config.json 中的 bridge.token
+    // token 从 Tampermonkey 存储读取（不硬编码，避免泄露进 git）。
+    // 设置：Tampermonkey → 该脚本 → 存储 tab → 新建 bridge_token = config.json 的 bridge.token
+    token: (typeof GM_getValue === 'function' ? (GM_getValue('bridge_token') || '') : ''),
     reconnectDelay: 2000,
   };
 
