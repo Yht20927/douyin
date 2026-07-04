@@ -97,6 +97,24 @@ else
 fi
 ```
 
+### 🔴 规则 2 补充：cid 一生一次的 SQL 路径（v3 记忆层）
+
+`suggest --auto` **自动跳过 `comments.replied=1` 的 cid**（数据源：SQLite 记忆层），无需手动 grep `/tmp/replied_cids.txt`。`analyze` 同理默认跳过已回复评论。
+
+- 默认：suggest/analyze 跳过已回复（幂等，重复 `--auto` 不重复回复）
+- `--force`：覆盖跳过，强制重新回复/分析某条
+
+```bash
+# 推荐：直接用 suggest --auto（自动跳过已回复 cid）
+node cli.js suggest <aweme_id> --auto
+
+# 查询已回复 cid（验证 / 手动检查）
+node cli.js replied --json
+node cli.js replied --aweme <aweme_id> --count
+```
+
+> 上面的 bash `grep /tmp/replied_cids.txt` 方案是 v2 时代的兜底；v3 起 SQL 路径是首选，bash 方案仅作离线检查备用。
+
 ### 🔴 规则 3：内容禁令
 
 ```
@@ -113,7 +131,7 @@ fi
 
 - 浏览器已安装 Tampermonkey + `scripts/douyin.user.js` 油猴脚本
 - 浏览器已打开 `douyin.com` 任意页面并**登录抖音**
-- 零依赖：无需 `npm install`
+- 依赖：首次运行需 `npm install`（better-sqlite3 + ws）
 
 ## 通用选项
 
@@ -388,6 +406,23 @@ node cli.js dashboard --video <aweme_id> --days 14
 ```
 
 生成本地自包含 HTML 仪表盘，含情感分布饼图、评论趋势折线图。生成后自动打开浏览器。
+
+### DM 私信
+
+```bash
+node cli.js dm send <sec_user_id> "私信内容"     # 发送私信
+node cli.js dm listen [--timeout N]               # 监听收到的私信
+node cli.js dm list                               # 查看最近收到的消息
+```
+
+### 清理过期记忆（TTL）
+
+```bash
+node cli.js cleanup --dry-run              # 预览将清理的行数（不删）
+node cli.js cleanup --days 90              # 清理 90 天前的 events/comments/corpus
+```
+
+默认保留 90 天。`events`/`comments`/`reply_corpus` 表无界增长的兜底。
 
 ---
 
