@@ -73,12 +73,18 @@ const ctx = {
   cmdGet: null,
   cmdPost: null,
   cmdAnalyze: null,
+  cmdSearch: null,
+  cmdLike: null,
+  cmdBrowse: null,
 };
 
 // 绑定命令（注入上下文）
 ctx.cmdGet = (args) => commands.get(ctx, args);
 ctx.cmdPost = (args) => commands.post(ctx, args);
 ctx.cmdAnalyze = (args) => commands.analyze(ctx, args);
+ctx.cmdSearch = (args) => commands.search(ctx, args);
+ctx.cmdLike = (args) => commands.like(ctx, args);
+ctx.cmdBrowse = (args) => commands.browse(ctx, args);
 
 // ═══════════════════════════════════════════════════════════
 // 帮助
@@ -111,6 +117,7 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js note <uid> [--tier vip|normal|blacklist|spam] [--tag T] [--untag T] [--notes "..."] [--clear]
   node cli.js events [--tail N] [--video <id>] [--uid <uid>] [--cmd <cmd>] [--status success|error] [--since <ts>] [--json]
   node cli.js corpus <search|recent|stats> [...]   回复语料库
+  node cli.js browse [--max-notes N]            模拟浏览行为（搜索+看视频+偶尔点赞）
   node cli.js failures [--limit N] [--recent]      失败模式 top-N（避雷清单）
   node cli.js dedup "<候选回复文本>"                  检查文本是否曾经发过
   node cli.js replied                                已回复 cid 列表（--json --aweme <id>）
