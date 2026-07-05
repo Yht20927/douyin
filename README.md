@@ -1,109 +1,156 @@
 # 🎵 Douyin Comment CLI
 
-> 抖音评论管理 CLI 工具。基于 Bridge Server + 油猴脚本方案，支持视频搜索、评论爬取、AI 智能分析、运营仪表盘。
+> 抖音评论运营 CLI 工具。基于 Bridge Framework（Bridge Server + 油猴脚本），支持视频搜索、评论获取、**AI 人格化回复**、**行为模拟**、运营仪表盘。
 
-**功能**：作品列表 / 搜索视频 / 获取评论（含嵌套回复） / 发表回复评论 / 点赞取消点赞 / 删除评论 / 下载视频（含音频） / AI 智能分析 / 回复语料库 / 去重护栏 / 运营仪表盘
+核心亮点：**内置反检测引擎** — 人格化回复 + 随机延迟 + 请求参数随机化 + 浏览行为模拟，让自动化操作更像真人。
 
-## 快速开始
+---
+
+## ✨ 核心功能
+
+| 功能 | 说明 |
+|------|------|
+| 🔍 视频搜索 | 关键词搜索视频 |
+| 💬 评论获取 | 获取评论及嵌套回复，`--new` 增量拉取 |
+| 🤖 **AI 人格化回复** | 7 种人格自动轮换，避免"AI 味" |
+| 🎭 **行为模拟** | 模拟真实浏览（搜索→看视频→点赞），穿插在发布流程中 |
+| ⏱️ **随机延迟** | 发布间隔 45-180s 随机 + 疲劳累加，模拟真人节奏 |
+| 🎲 **请求参数随机化** | browser_version 动态获取、paste_edit_method / enter_from 随机切换 |
+| 🛡️ 风控断路器 | 10 分钟内 post 失败 ≥3 次自动暂停 |
+| 📥 视频下载 | 下载视频+音频（BGM） |
+| 📊 运营仪表盘 | 本地 HTML 可视化 |
+| 💾 持久化记忆 | SQLite 存储评论、语料、失败模式 |
+
+---
+
+## 🚀 快速开始
 
 ```bash
 npm install
 
-# 1. 启动 Bridge Server
+# 1. 复制配置
+cp config.example.json config.json
+# 编辑 config.json：填入 bridge.token 和 llm.api_key
+
+# 2. 启动 Bridge Server
 node server.js
 
-# 2. Chrome 安装油猴脚本 scripts/douyin.user.js，打开 douyin.com 并登录
+# 3. Chrome 安装油猴脚本 scripts/douyin.user.js
+#    打开 douyin.com 并登录
 
-# 3. 验证连接
-node cli.js status
+# 4. 验证连接
+node cli.js my
 
-# 4. 开始使用
+# 5. 开始使用
 node cli.js my
 node cli.js search "关键词"
-node cli.js get <aweme_id> --all --depth 1
-node cli.js post <aweme_id> "内容"
+node cli.js get <aweme_id> --pages 1 --count 5
+node cli.js suggest <aweme_id> --auto
 ```
 
-## 命令清单
+---
+
+## 🤖 AI 人格化回复
+
+**7 种内置人格自动轮换**，每条评论风格不同：
+
+| 人格 | 特征 | 示例 |
+|------|------|------|
+| casual 朋友 | 口语短句，1-2 个 emoji | "哈哈哈这也太真实了😂" |
+| 好奇提问型 | 以问句为主，真诚追问 | "这个是在哪里买的呀？" |
+| 经验分享型 | "我之前也..." | "我之前试过，确实不错" |
+| 热情追捧型 | 感叹号+emoji，情绪化 | "啊啊啊这个绝了！！" |
+| 温和探讨型 | "我觉得..."委婉补充 | "说得挺有道理的，不过..." |
+| 轻松幽默型 | 玩梗、自嘲、夸张 | "我的手：我会了 我的脑：不你不会" |
+| 简短反应型 | 极简，3-15 字 | "真实👍" "马住了" |
+
+使用：
+```bash
+# 生成建议（不发布，看风格）
+node cli.js suggest <aweme_id>
+
+# 自动发布（人格轮换 + 随机延迟 + 浏览穿插）
+node cli.js suggest <aweme_id> --auto
+
+# 调试模式（跳过所有延迟）
+node cli.js suggest <aweme_id> --fast
+```
+
+---
+
+## 🎭 行为模拟（browse）
+
+模拟真实用户浏览行为，解决"只发不看"的账户不对称检测：
+
+```bash
+# 随机搜索热门词 → 看 1-2 个视频 → 偶尔点赞评论
+node cli.js browse --max-notes 2 --like-chance 0.2
+
+# 指定关键词浏览
+node cli.js browse 穿搭 美食 --max-notes 3
+```
+
+`suggest --auto` 已内置 browse 穿插：**每发约 5 条评论自动穿插一次浏览+点赞**。
+
+---
+
+## 🎲 请求参数随机化
+
+抖音油猴脚本内置多项反检测参数随机化：
+
+| 参数 | 随机化策略 |
+|------|-----------|
+| `browser_version` | 动态读取 `navigator.userAgent`（非硬编码） |
+| `paste_edit_method` | 90% `non_paste` / 10% `paste` |
+| `enter_from` | 85% `others_homepage` / 15% `search_result` |
+| `previous_page` | 85% `others_homepage` / 15% `homepage` |
+
+---
+
+## 📋 命令清单
 
 ### 核心操作
 
 | 命令 | 用途 | 示例 |
 |------|------|------|
-| `my` | 我的作品列表 | `node cli.js my --count 20` |
-| `search` | 搜索视频 | `node cli.js search "关键词" --offset 0 --count 20` |
-| `get` | 获取评论（含嵌套回复） | `node cli.js get <id> --all --depth 1` |
-| `replies` | 单条评论的回复列表 | `node cli.js replies <cid> <aweme_id>` |
-| `post` | 发表/回复评论 | `node cli.js post <id> "内容" --reply-to <cid>` |
+| `my` | 我的作品列表 | `node cli.js my` |
+| `search` | 搜索视频 | `node cli.js search "关键词" --count 5` |
+| `get` | 获取评论 | `node cli.js get <id> --pages 1 --count 5` |
+| `post` | 发表评论/回复 | `node cli.js post <id> "内容" --reply-to <cid>` |
 | `like` | 点赞视频 | `node cli.js like <id>` |
-| `like --unlike` | 取消点赞 | `node cli.js like <id> --unlike` |
 | `delete-comment` | 删除评论 | `node cli.js delete-comment <cid>` |
-| `download` | 下载视频（含音频） | `node cli.js download <id> [--audio-only] [--out <dir>]` |
+| `download` | 下载视频+音频 | `node cli.js download <id>` |
 
-### AI 分析
+### AI 与运营
 
 | 命令 | 用途 | 示例 |
 |------|------|------|
 | `analyze` | AI 分析评论情感/优先级 | `node cli.js analyze <id>` |
-| `suggest` | AI 生成回复建议（可自动发布） | `node cli.js suggest <id> --auto --min-priority 3` |
+| `suggest` | AI 生成回复建议 | `node cli.js suggest <id> --auto` |
+| `browse` | 模拟浏览行为 | `node cli.js browse --max-notes 2` |
+| `dashboard` | 运营仪表盘 HTML | `node cli.js dashboard` |
 
-### 反馈闭环（基于 SQLite 记忆层）
+### 反馈闭环（SQLite 记忆层）
 
-| 命令 | 用途 | 示例 |
-|------|------|------|
-| `replied` | 已回复 cid 列表（去重用） | `node cli.js replied [--json] [--aweme <id>] [--count]` |
-| `corpus search` | 搜索历史成功回复语料 | `node cli.js corpus search <keyword>` |
-| `corpus recent` | 最近发布过的回复 | `node cli.js corpus recent --limit 20` |
-| `corpus stats` | 语料统计 | `node cli.js corpus stats` |
-| `failures` | 失败模式 top 10 | `node cli.js failures [--recent]` |
-| `dedup` | 查重护栏：文本是否曾发过 | `node cli.js dedup "<候选文本>"` |
-
-### 运维
-
-| 命令 | 用途 | 示例 |
-|------|------|------|
-| `dashboard` | 生成运营仪表盘 HTML | `node cli.js dashboard --video <id> --days 14` |
-| `profile` | 用户交互历史 | `node cli.js profile <uid>` |
-| `events` | 原始事件流（调试用） | `node cli.js events --cmd post --json` |
-| `log` | 操作日志 | `node cli.js log --tail 20 [--video <id>] [--failed]` |
-| `whois` | 用户信息查询 | `node cli.js whois <uid>` |
-| `note` | 用户备注管理 | `node cli.js note <uid> [--tier ...] [--tag ...] [--notes ...]` |
-| `status` | Bridge 连接状态 | `node cli.js status` |
-
-## 通用选项
-
-| 选项 | 作用 |
+| 命令 | 用途 |
 |------|------|
-| `--raw` | 输出完整响应（含元数据） |
-| `--no-log` | 本次不写入审计日志 |
-| `--count N` | 返回条数（上限 20，风控安全） |
-| `--offset N` | 搜索偏移量 |
-| `--all` | 获取全部评论（谨慎使用） |
-| `--depth N` | 嵌套回复深度 |
-| `--pages N` | 翻页数 |
-| `--new` | 增量拉取（自上次 fetch 后的新评论） |
-| `--since <ts>` | 指定时间戳增量 |
-| `--reply-to <cid>` | 回复目标评论 |
-| `--reply-limit N` | 每条评论最多拉取回复数 |
-| `--auto` | suggest 命令自动发布 |
-| `--min-priority N` | 最低回复优先级 |
-| `--unlike` | 取消点赞（like 命令） |
-| `--audio-only` | 仅下载音频（download 命令） |
-| `--out <dir>` | 指定下载输出目录（download 命令） |
+| `replied` | 已回复 cid 列表 |
+| `corpus search/recent/stats` | 回复语料库 |
+| `failures` | 失败模式 top 10 |
+| `dedup` | 查重护栏 |
 
-## 配置
+---
 
-```bash
-cp config.example.json config.json   # 首次使用时复制模板
-```
+## ⚙️ 配置
 
-`config.json`（已加入 `.gitignore`，不会提交到版本控制）：
+`config.json`（从 `config.example.json` 复制）：
 
 ```json
 {
   "bridge": {
     "host": "127.0.0.1",
-    "port": 19422
+    "port": 19422,
+    "token": "your-bridge-token"
   },
   "llm": {
     "api_key": "sk-...",
@@ -116,116 +163,85 @@ cp config.example.json config.json   # 首次使用时复制模板
 }
 ```
 
-**LLM API Key**（推荐使用环境变量）：
-
+环境变量（优先级更高）：
 ```bash
-export OPENAI_API_KEY="sk-..."        # 优先级最高
-export OPENAI_BASE_URL="https://..."  # 可选，自定义 API 地址
-export OPENAI_MODEL="gpt-4o-mini"     # 可选，模型名称
+export OPENAI_API_KEY="sk-..."
+export OPENAI_BASE_URL="https://..."
+export OPENAI_MODEL="gpt-4o-mini"
 ```
 
-## 前置条件
+---
 
-1. Bridge Server 运行 → `node server.js`
-2. Chrome + Tampermonkey + `scripts/douyin.user.js` 油猴脚本
-3. 浏览器打开 `douyin.com` 任意页面并登录
+## 🏗️ 架构
 
-> **无需 Chrome 调试模式 / CDP** — GM_xmlhttpRequest 绕过 Chrome PNA loopback 限制，`unsafeWindow.eval()` 注入页面上下文执行。
+```
+CLI (cli.js) → HTTP/WS → Bridge Server (:19422) → 油猴脚本 → 页面 fetch → 抖音 API
+```
 
-## 架构
+**签名安全**：油猴脚本在页面上下文执行，使用页面原生 `fetch`，自动携带真实 Cookie 和签名。
+
+**新增反检测模块**：
+- `lib/jitter.js` — 人类行为延迟工具库
+- `lib/personas.js` — 7 种人格模板池
+- `lib/commands/browse.js` — 模拟浏览行为
+
+---
+
+## 🛡️ 反检测设计
+
+| 检测维度 | 对策 |
+|----------|------|
+| **固定时间间隔** | 发布间隔 45-180s 随机 + 疲劳累加 |
+| **AI 内容特征** | 7 种人格自动轮换 + AI 特征词黑名单 |
+| **只发不看** | 每发 ~5 条穿插 browse 浏览+点赞 |
+| **静态请求指纹** | browser_version 动态获取、paste_edit_method / enter_from 随机化 |
+| **重复内容** | reply_corpus UNIQUE 去重 + LLM 重写 |
+| **高频失败** | 10 分钟窗口断路器（非累计值） |
+
+---
+
+## 📁 项目结构
 
 ```
 douyin-cli/
 ├── cli.js                    # CLI 入口
-├── server.js                 # Bridge Server 入口
-├── config.json               # 配置（从 config.example.json 复制）
+├── server.js                 # Bridge Server
+├── config.json               # 配置
 ├── lib/
 │   ├── commands/             # 命令模块
 │   │   ├── get.js            # 获取评论
 │   │   ├── post.js           # 发表评论
-│   │   ├── like.js           # 点赞/取消点赞
-│   │   ├── delete-comment.js # 删除评论
-│   │   ├── download.js       # 下载视频（含音频）
+│   │   ├── suggest.js        # AI 回复建议（含人格化+随机延迟）
+│   │   ├── browse.js         # 模拟浏览行为
 │   │   ├── search.js         # 搜索视频
-│   │   ├── my.js             # 我的作品
-│   │   ├── replies.js        # 回复列表
-│   │   ├── analyze.js        # LLM 分析
-│   │   ├── suggest.js        # LLM 回复建议
-│   │   ├── dashboard.js      # 运营仪表盘
-│   │   ├── corpus.js         # 回复语料库
-│   │   ├── failures.js       # 失败模式分析
-│   │   ├── dedup.js          # 文本去重护栏
-│   │   ├── replied.js        # 已回复追踪
-│   │   ├── events.js         # 原始事件流
-│   │   ├── whois.js          # 用户查询
-│   │   ├── note.js           # 用户备注
-│   │   ├── profile.js        # 用户交互历史
-│   │   └── helpers.js        # 共享辅助函数
+│   │   ├── download.js       # 下载视频+音频
+│   │   └── ...
 │   ├── memory/               # SQLite 持久化记忆层
-│   │   ├── db.js             # 数据库单例 + schema 迁移
-│   │   ├── events.js         # 事件流读写
-│   │   ├── comments.js       # 评论实体（含 replied 追踪）
-│   │   ├── notes.js          # 视频实体
-│   │   ├── users.js          # 用户实体
-│   │   ├── corpus.js         # 回复语料
-│   │   └── failures.js       # 失败模式
-│   ├── server/               # Bridge Server 组件
-│   ├── client/               # Bridge Client
-│   ├── shared/               # 共享工具
-│   ├── audit.js              # 审计日志
-│   ├── dashboard.js          # Chart.js 仪表盘 HTML 生成
-│   └── llm.js                # LLM 封装
+│   ├── personas.js           # 7 种人格模板池
+│   ├── jitter.js             # 人类行为延迟工具库
+│   ├── llm.js                # LLM 封装（支持人格化）
+│   └── ...
 ├── scripts/
-│   └── douyin.user.js        # 油猴脚本
+│   └── douyin.user.js        # 油猴脚本（含参数随机化）
 ├── storage/
-│   └── douyin.db             # SQLite 数据库（记忆层）
-├── downloads/                # 下载的视频/音频（已 gitignore）
-├── logs/
-│   ├── audit.json            # 审计日志
-│   └── results/              # 命令结果落盘
-├── docs/
-│   └── superpowers/specs/    # 设计文档
-├── SKILL.md                  # Agent 技能文档
+│   └── douyin.db             # SQLite 数据库
 ├── reply-strategy.md         # 回复策略模板
-├── REASONIX.md               # 架构决策文档
-└── package.json
+├── SKILL.md                  # Agent 技能文档
+└── README.md                 # 本文档
 ```
 
-## 通信架构
+---
 
-```
-┌──────────────────────────────────────────────────────────────┐
-│  CLI (cli.js)                                                │
-│  ── HTTP POST /api/call ──►                                  │
-│                              Bridge Server (:19422)           │
-│                                 ├─ Connection Registry        │
-│                                 ├─ Poll Queue / Waiters       │
-│                                 └─ Request → Response         │
-│                                     │                         │
-│  ── HTTP 长轮询 ◄─────────── 油猴脚本（GM_xmlhttpRequest）── │
-│     /api/poll  /api/result       ├─ sandbox: 通信             │
-│                                  └─ unsafeWindow: __bridge →  │
-│                                    页面 fetch/cookie/eval     │
-└──────────────────────────────────────────────────────────────┘
-```
-
-## 持久化记忆层
-
-所有命令在写 `logs/audit.json` 的同时旁路写入 `storage/douyin.db`（SQLite），提供：
-
-- **评论去重**：`comments.replied` 追踪所有已回复 cid，跨日跨轮生效
-- **回复语料**：`reply_corpus` 累积成功回复，支持搜索和查重
-- **失败模式**：`failure_patterns` 记录风控/错误签名，辅助避雷
-- **增量拉取**：`events` 表索引覆盖 `--new` / `--since`，O(log N) 查询
-
-## 审计日志
-
-所有操作自动记录到 `logs/audit.json`。大结果（get/search/my）落地为独立 JSON 文件，便于增量拉取（`--new`）。
-
-## 依赖
+## 📦 依赖
 
 - Node.js 18+
-- `ws` — WebSocket 客户端
-- `better-sqlite3` — SQLite 持久化记忆层
-- Chrome + Tampermonkey 扩展
-- （可选）OpenAI API key — `analyze` / `suggest` 命令
+- `ws` — WebSocket
+- `better-sqlite3` — SQLite
+- Chrome + Tampermonkey + 油猴脚本
+- （可选）OpenAI-compatible API key
+
+---
+
+## 📝 License
+
+MIT
