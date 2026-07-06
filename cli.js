@@ -98,6 +98,7 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js get <aweme_id>                  获取评论 (--all --depth N --new --since <ts>)
   node cli.js replies <cid> <aweme_id>        获取回复列表
   node cli.js my                              我的作品
+  node cli.js user <sec_user_id | 主页URL>     查看用户作品信息 (--count N --cursor <ts>)
   node cli.js post <aweme_id> "内容"           发表评论
   node cli.js post <aweme_id> "回复" --reply-to <cid>
   node cli.js post <aweme_id> "@1179139456380456 内容" --reply-to <cid> --at <uid> <sec_uid>

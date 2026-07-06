@@ -201,6 +201,34 @@ node cli.js my --count 20
 }]
 ```
 
+### 用户作品
+
+查看任意用户的主页作品信息（按 `sec_user_id`，也接受完整主页 URL）。
+
+```bash
+node cli.js user MS4wLjABAAAAvJhhhv1qrvful_kqsv6Ry2F8v8Z-jCDNha0yyvkVKg2eCZ60_Ni2-23tUZ08NdWX
+node cli.js user https://www.douyin.com/user/MS4wLjABAAAA...   # URL 形式
+node cli.js user <sec_user_id> --count 18                      # 限量
+node cli.js user <sec_user_id> --cursor 1782389806000          # 翻页（用上次返回的 max_cursor）
+```
+
+输出：
+```json
+{
+  "user": { "uid": "2988943290152652", "sec_uid": "MS4wLjAB...", "nickname": "Ya 小九." },
+  "has_more": 1, "max_cursor": 1783213200000, "min_cursor": 0, "count": 6,
+  "aweme_list": [{
+    "aweme_id": "7631450655144736931",
+    "desc": "#欢乐家长群2 #欢乐家长群 #推荐",
+    "time": 1776835569, "duration": 37408, "is_top": true,
+    "stats": { "plays": 0, "likes": 18600, "comments": 109, "shares": 513, "collects": 1123 },
+    "cover": "https://..."
+  }]
+}
+```
+
+> 注：`count` 为建议值，实际返回条数可能略多（置顶视频 `is_top=true` 不占配额）；`plays` 对他人作品恒为 0（接口限制）。作品以 `isMine=false` 落库，记录 `author_uid` 便于按作者检索。
+
 ### 搜索视频
 
 ```bash

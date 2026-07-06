@@ -937,6 +937,11 @@ window.__bridge = {
     var p=new URLSearchParams(Object.assign(this._q(),{sec_user_id:secUid,max_cursor:cursor||0,count:count||18,locate_query:'false',show_live_replay_strategy:'1',need_time_list:'1',time_list_query:'0',whale_cut_token:'',cut_version:'1',publish_video_strategy_type:'2',from_user_page:'0'}));
     return await bridgeFetchJson('myPosts','/aweme/v1/web/aweme/post/?'+p,{credentials:'include'},true);
   },
+  // 任意用户作品列表（按 sec_user_id 查看他人主页作品）
+  userPosts: async function(secUserId,cursor,count){
+    var p=new URLSearchParams(Object.assign(this._q(),{sec_user_id:secUserId,max_cursor:cursor||0,count:count||18,locate_query:'false',show_live_replay_strategy:'1',need_time_list:'1',time_list_query:'0',whale_cut_token:'',cut_version:'1',publish_video_strategy_type:'2',from_user_page:'1'}));
+    return await bridgeFetchJson('userPosts','/aweme/v1/web/aweme/post/?'+p,{credentials:'include'},true);
+  },
   search: async function(kw,offset,count){
     var p=new URLSearchParams(Object.assign(this._q(),{keyword:kw,offset:offset||0,count:count||10,search_channel:'aweme_general',search_source:'normal_search',query_correct_type:'1',is_filter_search:'0',need_filter_settings:'0',list_type:'single'}));
     return await bridgeFetchJson('search','/aweme/v1/web/general/search/single/?'+p,{credentials:'include'},true);

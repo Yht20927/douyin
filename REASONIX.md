@@ -44,6 +44,7 @@ Bridge Server 代码已本地化（server.js + lib/server/ + lib/client/ + lib/s
 | `node cli.js get <id> [--pages N\|--all] [--depth N] [--count N] [--reply-limit N] [--new] [--since <ts>]` | 获取评论 |
 | `node cli.js replies <cid> <aweme_id>` | 获取回复列表 |
 | `node cli.js my [--count N]` | 我的作品 |
+| `node cli.js user <sec_user_id\|主页URL> [--count N] [--cursor <ts>]` | 查看用户作品信息 |
 | `node cli.js post <id> "<text>" [--reply-to <cid>] [--at <uid> <sec_uid>]` | 发表评论 |
 | `node cli.js like <id> [--unlike]` | 点赞/取消点赞视频 |
 | `node cli.js delete-comment <cid>` | 删除评论 |

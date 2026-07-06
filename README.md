@@ -114,6 +114,7 @@ node cli.js browse 穿搭 美食 --max-notes 3
 | 命令 | 用途 | 示例 |
 |------|------|------|
 | `my` | 我的作品列表 | `node cli.js my` |
+| `user` | 查看用户作品信息 | `node cli.js user <sec_user_id\|主页URL>` |
 | `search` | 搜索视频 | `node cli.js search "关键词" --count 5` |
 | `get` | 获取评论 | `node cli.js get <id> --pages 1 --count 5` |
 | `post` | 发表评论/回复 | `node cli.js post <id> "内容" --reply-to <cid>` |
