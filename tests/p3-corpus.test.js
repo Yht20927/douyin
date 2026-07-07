@@ -210,7 +210,7 @@ describe('P3: cmdSuggest LLM 上下文注入 + dedup 重写', () => {
         { cid: 'c2', uid: 'uB', sentiment: 'positive', priority: 4, text: '问题2' },
       ];
       const ctx = { audit: new AuditLogger(), config: {}, cmdAnalyze };
-      const out = await cmdSuggest(ctx, ['v1']);
+      const out = await cmdSuggest(ctx, ['v1', '--fast']);
 
       expect(out).toHaveLength(2);
       expect(captured).toBeTruthy();
@@ -234,16 +234,17 @@ describe('P3: cmdSuggest LLM 上下文注入 + dedup 重写', () => {
     const llmModule = require('../lib/llm');
     const origCtor = llmModule.LLMClient;
     let calls = 0;
+    let rewriteCalls = 0;
     llmModule.LLMClient = class FakeLLM {
       constructor() {}
       async suggestReplies(comments) {
         calls++;
-        if (calls === 1) {
-          // 首轮直接返回命中文本
-          return comments.map(c => ({ cid: c.cid, reply: '感谢支持' }));
-        }
-        // 重写轮：返回新文本
-        return comments.map(c => ({ cid: c.cid, reply: '新文案 ' + c.cid }));
+        // 首轮直接返回命中文本 → 触发重写
+        return comments.map(c => ({ cid: c.cid, reply: '感谢支持' }));
+      }
+      async rewriteReply(srcText, originalReply) {
+        rewriteCalls++;
+        return '新文案 c1';
       }
     };
 
@@ -254,8 +255,9 @@ describe('P3: cmdSuggest LLM 上下文注入 + dedup 重写', () => {
         { cid: 'c1', sentiment: 'positive', priority: 5, text: 'x' },
       ];
       const ctx = { audit: new AuditLogger(), config: {}, cmdAnalyze };
-      const out = await cmdSuggest(ctx, ['v1']);
-      expect(calls).toBe(2);
+      const out = await cmdSuggest(ctx, ['v1', '--fast']);
+      expect(calls).toBe(1);
+      expect(rewriteCalls).toBe(1);
       expect(out[0].reply).toBe('新文案 c1');
       expect(out[0].rewritten).toBe(true);
     } finally {
