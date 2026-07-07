@@ -234,11 +234,19 @@ node cli.js campaign run 1 --limit 10
 # 4. 控制
 node cli.js campaign pause 1
 node cli.js campaign resume 1
-node cli.js campaign status 1      # posted/failed/skipped/pending
+node cli.js campaign status 1      # posted/failed/skipped/pending + daemon 存活
 node cli.js campaign list
+
+# 5. 后台调度（daemon）
+node cli.js campaign run 1 --daemon   # spawn detached 子进程前台跑 run，PID 写 storage/campaign-1.pid，日志写 logs/campaign-1.log
+node cli.js campaign stop 1           # 杀 daemon + 清 PID + 置 paused（幂等，daemon 已死也正常清理）
 ```
 
 **自适应风控**（`risk-control.adaptiveInterval`）：`base 60s × 1.5`（近 5min 有 status_code=8）`× 2.0`（当日已发 ≥ daily_quota×0.7）`+ ±15% jitter`。发布前 `preflightPublish` 预检 blacklist/sticker/重复回复/近期风控。
+
+**崩溃恢复**：daemon 中途死/被 stop，已执行的 task 留 posted/failed，未执行的仍是 pending；下次 `run` 续跑。
+
+**仪表盘**：`node cli.js dashboard` 含推广活动卡片（进度条 posted/failed/skipped/pending + 状态徽章 + 配额）。
 
 ## 命令参考
 

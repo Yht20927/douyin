@@ -215,3 +215,48 @@ describe('P4: campaign 命令族', () => {
     }
   }));
 });
+
+describe('P4: campaign daemon（--daemon / stop）', () => {
+  it('status: 无 PID 文件 → daemon.running=false', withTempProject(async () => {
+    const cmdCampaign = require('../lib/commands/campaign');
+    const { AuditLogger } = require('../lib/audit');
+    const ctx = { audit: new AuditLogger(), config: {} };
+    const c = await cmdCampaign(ctx, ['create', '--name', 'd0', '--videos', 'v1']);
+    const st = await cmdCampaign(ctx, ['status', String(c.id)]);
+    expect(st.daemon.running).toBe(false);
+    expect(st.daemon.pid).toBe(null);
+  }));
+
+  it('stale PID 文件被 daemonAlive 清理', withTempProject(async () => {
+    const cmdCampaign = require('../lib/commands/campaign');
+    const { AuditLogger } = require('../lib/audit');
+    const fs = require('fs');
+    const path = require('path');
+    const ctx = { audit: new AuditLogger(), config: {} };
+    const c = await cmdCampaign(ctx, ['create', '--name', 'd1', '--videos', 'v1']);
+    const pidFile = path.join(process.env.DOUYIN_STORAGE_DIR, `campaign-${c.id}.pid`);
+    fs.writeFileSync(pidFile, '999999'); // 必定不存在的 pid
+    const st = await cmdCampaign(ctx, ['status', String(c.id)]);
+    expect(st.daemon.running).toBe(false);
+    expect(fs.existsSync(pidFile)).toBe(false); // 失效 PID 文件被清理
+  }));
+
+  it('run --daemon 写 PID 文件 + stop 幂等清理', withTempProject(async () => {
+    const cmdCampaign = require('../lib/commands/campaign');
+    const { AuditLogger } = require('../lib/audit');
+    const fs = require('fs');
+    const path = require('path');
+    const ctx = { audit: new AuditLogger(), config: {} };
+    const c = await cmdCampaign(ctx, ['create', '--name', 'd2', '--videos', 'v1']);
+    // 无 task：子进程前台 run 立即退出（getDue 空），但 PID 文件已由 spawn 写入
+    const r = await cmdCampaign(ctx, ['run', String(c.id), '--daemon']);
+    expect(r.daemon).toBe(true);
+    expect(typeof r.pid).toBe('number');
+    const pidFile = path.join(process.env.DOUYIN_STORAGE_DIR, `campaign-${c.id}.pid`);
+    expect(fs.existsSync(pidFile)).toBe(true);
+    // stop 幂等：无论子进程是否已退出，都清理 PID + 置 paused
+    const stop = await cmdCampaign(ctx, ['stop', String(c.id)]);
+    expect(stop.campaign_id).toBe(c.id);
+    expect(fs.existsSync(pidFile)).toBe(false);
+  }));
+});

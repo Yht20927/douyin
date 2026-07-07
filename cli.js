@@ -130,7 +130,7 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js preflight [command]           节奏守卫自检（距下次写需等多久 / 命令是否可执行）
   node cli.js repo-info [<owner/repo>]       获取 GitHub 仓库真实信息（推广评论事实源，缓存 1h，--refresh 强制刷新）
   node cli.js factcheck "<文本>"               推广评论发布前事实校验（star 数/仓库名/版本号 vs repo-info 缓存）
-  node cli.js campaign <create|plan|run|pause|resume|status|list>  推广引擎（跨视频可暂停可恢复）
+  node cli.js campaign <create|plan|run|stop|pause|resume|status|list>  推广引擎（跨视频可暂停可恢复；run --daemon 后台）
 
   通用选项： --raw（原始输出） --no-log（本次不记录日志）
 
