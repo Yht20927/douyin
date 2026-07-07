@@ -15,7 +15,9 @@
 - `lib/dashboard.js` — HTML 仪表盘生成（Chart.js）
 - `lib/llm.js` — OpenAI-compatible LLM 客户端
 - `lib/commands/` — CLI 命令模块（每个命令独立文件）
-- `lib/memory/` — **v3 持久化记忆层**（SQLite 单例 / 事件流；后续 P2-P4 在此扩展实体表 / 语料 / Campaign）
+- `lib/memory/` — **v3 持久化记忆层**（SQLite 单例 / 事件流；P2 实体表 / P3 语料 / P4 campaigns 均已完成）
+- `lib/risk-control.js` — **请求节奏守卫 + P4 自适应风控**（enforceDelay / adaptiveInterval / preflightPublish）
+- `lib/commands/campaign.js` — **P4 推广引擎命令族**（create/plan/run/pause/resume/status/list）
 - `lib/server/` — Bridge Server 核心（registry / router / ws-hub）
 - `lib/client/` — HTTP 客户端封装（CLI / SDK 共用）
 - `lib/shared/` — 共享协议定义 + 序列化工具

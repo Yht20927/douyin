@@ -217,6 +217,29 @@ node cli.js factcheck "star 已经 100 了"                       # ok=false，�
 
 **工作流接法**：推广引流场景，`repo-info` 一次缓存后 `suggest` 自动注入 `repoFacts`；发布前 `factcheck` 兜底。无 `repo-info` 输出时，禁止生成含具体数字的推广评论（见 `评论风格指南.md`）。
 
+## 推广引擎（Campaign，P4）
+
+> 跨视频推广升格为活动对象，可暂停可恢复，带自适应风控。
+
+```bash
+# 1. 创建活动（目标视频 + 配额）
+node cli.js campaign create --name "618新品" --videos v1,v2 --daily-quota 20
+
+# 2. LLM 预生成 task（拉评论 + 生成回复，不发送）
+node cli.js campaign plan 1
+
+# 3. 前台跑 due task（自适应间隔 + 发布前预检）
+node cli.js campaign run 1 --limit 10
+
+# 4. 控制
+node cli.js campaign pause 1
+node cli.js campaign resume 1
+node cli.js campaign status 1      # posted/failed/skipped/pending
+node cli.js campaign list
+```
+
+**自适应风控**（`risk-control.adaptiveInterval`）：`base 60s × 1.5`（近 5min 有 status_code=8）`× 2.0`（当日已发 ≥ daily_quota×0.7）`+ ±15% jitter`。发布前 `preflightPublish` 预检 blacklist/sticker/重复回复/近期风控。
+
 ## 命令参考
 
 ### 我的作品
