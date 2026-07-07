@@ -127,6 +127,9 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js dm listen [--timeout N]              监听收到的私信
   node cli.js dm list                              查看最近收到的消息
   node cli.js cleanup [--days 90] [--dry-run]      清理过期记忆（events/comments/corpus）
+  node cli.js preflight [command]           节奏守卫自检（距下次写需等多久 / 命令是否可执行）
+  node cli.js repo-info [<owner/repo>]       获取 GitHub 仓库真实信息（推广评论事实源，缓存 1h，--refresh 强制刷新）
+  node cli.js factcheck "<文本>"               推广评论发布前事实校验（star 数/仓库名/版本号 vs repo-info 缓存）
 
   通用选项： --raw（原始输出） --no-log（本次不记录日志）
 

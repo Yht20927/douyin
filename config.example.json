@@ -15,5 +15,9 @@
     "max_tokens": 4096,
     "timeout_ms": 60000,
     "max_retries": 3
+  },
+  "intervals": {
+    "write": [40, 55],
+    "read": [30, 50]
   }
 }
