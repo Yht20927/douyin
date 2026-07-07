@@ -1,5 +1,7 @@
 # REASONIX.md — douyin-comment-cli (Bridge Framework v2)
 
+> 适用版本: v3 · 最后更新: 2026-07-07 · 维护者: Yht20927
+
 ## Stack
 - **Node.js** — vanilla, no framework
 - **Bridge Framework** — 本地 WebSocket Server + 油猴脚本，替代 CDP
