@@ -250,6 +250,13 @@ douyin-cli/
 
 ---
 
+## 🤝 贡献与安全
+
+- 贡献指南、开发环境、代码约定见 [`CONTRIBUTING.md`](./CONTRIBUTING.md)
+- 安全策略、漏洞报告、密钥安全、授权边界见 [`SECURITY.md`](./SECURITY.md)
+
+---
+
 ## 📝 License
 
 MIT
