@@ -1,5 +1,8 @@
 # 🎵 Douyin Comment CLI
 
+[![test](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml/badge.svg)](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml)
+[![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
+
 > 适用版本: v3 · 最后更新: 2026-07-07 · 维护者: Yht20927
 
 > 抖音评论运营 CLI 工具。基于 Bridge Framework（Bridge Server + 油猴脚本），支持视频搜索、评论获取、**AI 人格化回复**、**行为模拟**、运营仪表盘。
@@ -212,30 +215,39 @@ CLI (cli.js) → HTTP/WS → Bridge Server (:19422) → 油猴脚本 → 页面 
 
 ```
 douyin-cli/
-├── cli.js                    # CLI 入口
-├── server.js                 # Bridge Server
-├── config.json               # 配置
+├── cli.js                    # CLI 入口（命令路由 + help）
+├── server.js                 # Bridge Server（WebSocket + HTTP /api/status）
+├── config.example.json       # 配置模板（bridge + llm + intervals）
+├── CONTRIBUTING.md           # 贡献指南
+├── SECURITY.md               # 安全策略
 ├── lib/
-│   ├── commands/             # 命令模块
-│   │   ├── get.js            # 获取评论
-│   │   ├── post.js           # 发表评论
-│   │   ├── suggest.js        # AI 回复建议（含人格化+随机延迟）
-│   │   ├── browse.js         # 模拟浏览行为
-│   │   ├── search.js         # 搜索视频
-│   │   ├── download.js       # 下载视频+音频
-│   │   └── ...
+│   ├── commands/             # 命令模块（每命令一文件，注册在 index.js）
+│   │   ├── get/post/like/delete-comment.js    # 核心 CRUD
+│   │   ├── search/my/user/replies/download.js # 读取类
+│   │   ├── analyze/suggest.js                 # LLM 分析与回复
+│   │   ├── browse.js                          # 模拟浏览行为
+│   │   ├── campaign.js                        # P4 推广引擎（create/plan/run/stop/...）
+│   │   ├── preflight/repo-info/factcheck.js   # 节奏与事实守卫
+│   │   ├── whois/note/events/log/profile.js   # 记忆层查询
+│   │   ├── corpus/failures/dedup/replied.js   # 语料 / 失败 / 查重
+│   │   └── dashboard/dm/cleanup.js
 │   ├── memory/               # SQLite 持久化记忆层
+│   │   ├── db.js             # 单例 + WAL + schema 迁移（v6）
+│   │   ├── events/users/comments/videos.js
+│   │   └── corpus/failures/campaigns.js
+│   ├── risk-control.js       # 请求节奏守卫 + 自适应风控
+│   ├── llm.js                # LLM 客户端（人格化 + repoFacts 注入）
 │   ├── personas.js           # 7 种人格模板池
-│   ├── jitter.js             # 人类行为延迟工具库
-│   ├── llm.js                # LLM 封装（支持人格化）
-│   └── ...
+│   ├── jitter.js             # 节奏与拟人化延迟
+│   ├── audit.js              # 审计日志（SQLite 双写）
+│   └── dashboard.js          # HTML 仪表盘
 ├── scripts/
-│   └── douyin.user.js        # 油猴脚本（含参数随机化）
-├── storage/
-│   └── douyin.db             # SQLite 数据库
-├── reply-strategy.md         # 回复策略模板
-├── SKILL.md                  # Agent 技能文档
-└── README.md                 # 本文档
+│   ├── douyin.user.js        # 油猴脚本（页面 fetch + 参数随机化）
+│   ├── _template.user.js     # 新站点油猴模板
+│   └── bridge.sh             # Bridge Server 生命周期管理
+├── tests/                    # vitest（123 用例，withTempProject 隔离）
+├── storage/                  # SQLite DB（gitignore）
+└── logs/                     # 审计日志 + 结果文件（gitignore）
 ```
 
 ---
