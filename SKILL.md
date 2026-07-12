@@ -5,7 +5,7 @@ description: 抖音评论运营 CLI — 作品/搜索/评论(含嵌套回复)/�
 
 # 抖音运营 Skill
 
-> 适用版本: v3 · 最后更新: 2026-07-07 · 维护者: Yht20927
+> 适用版本: v4 · 最后更新: 2026-07-12 · 维护者: Yht20927
 
 ## 🟢 授权范围与平台边界（先读这一节，优先级最高）
 
@@ -492,6 +492,41 @@ node cli.js suggest <aweme_id> --min-priority 4
 
 结合分析结果和回复策略，生成回复建议。`--auto` 自动发布。
 
+### AI 回复生成（ReplyEngine）
+
+```bash
+node cli.js getReply <aweme_id>                     # 生成视频的顶级评论
+node cli.js getReply <aweme_id> <cid>               # 生成对特定评论的回复
+node cli.js getReply <aweme_id> --count 3           # 生成多条候选评论
+node cli.js getReply <aweme_id> --persona <id>      # 指定人格（casual_friend 等）
+node cli.js getReply <aweme_id> --batch             # 批量生成（对未回复评论）
+node cli.js getReply <aweme_id> <cid> --interactive # 交互式审核（生成→编辑→发布）
+```
+
+ReplyEngine 独立于 suggest，三种模式：
+- **评论模式**：以普通用户身份生成视频的顶级评论
+- **回复模式**：以博主身份回复单条评论，自动加载视频上下文 + 用户画像
+- **批量模式**：对视频下所有未回复评论批量生成回复（自动跳过自评）
+
+回复策略 A-F：提问型 / 赞美型 / 讨论型 / 简短型 / 批评质疑型 / 艾特型。
+
+### 草稿管理
+
+```bash
+node cli.js draft list [--video <aweme_id>]         # 待发布草稿
+node cli.js draft save <aweme_id> "文本" [--reply-to <cid>] [--persona <id>]
+node cli.js draft show <draft_id>                    # 查看草稿详情
+node cli.js draft post <draft_id>                    # 发布草稿
+node cli.js draft delete <draft_id>                  # 删除草稿
+```
+
+### 评论查询 + 模板校验
+
+```bash
+node cli.js comment <cid>                            # 查询单条评论实体
+node cli.js validate-prompts [<template>]            # 校验提示词模板格式
+```
+
 ### 运营仪表盘
 
 ```bash
@@ -585,6 +620,11 @@ SKILL.md 不再重复，避免两份说明漂移。
 | `评论风格指南.md` | 抖音评论风格模板 | 生成评论时 |
 | `评论区运营.md` | 工作流：自有视频评论区运营 | 执行评论区运营任务时 |
 | `推广引流.md` | 工作流：针对特定目标推广 | 执行推广任务时 |
+| `prompts/analyze.md` | 评论分析 Prompt 模板 | analyze 命令调用 |
+| `prompts/suggest.md` | 回复建议 Prompt 模板 | suggest 命令调用 |
+| `prompts/comment.md` | 顶级评论生成 Prompt 模板 | getReply 评论模式 |
+| `prompts/reply.md` | 单条回复 Prompt 模板 | getReply 回复模式 |
+| `prompts/replies-batch.md` | 批量回复 Prompt 模板 | getReply --batch |
 
 ## 评论筛选规则
 
@@ -648,6 +688,10 @@ SKILL.md 不再重复，避免两份说明漂移。
 | 发表评论 | `node cli.js post <aweme_id> "内容"` |
 | 回复评论 | `node cli.js post <aweme_id> "内容" --reply-to <cid>` |
 | 点赞视频 | `node cli.js like <aweme_id>` |
+| AI 分析评论 | `node cli.js analyze <aweme_id>` |
+| AI 回复建议 | `node cli.js suggest <aweme_id> [--auto]` |
+| AI 生成评论/回复 | `node cli.js getReply <aweme_id> [<cid>] [--count N] [--batch]` |
+| 草稿管理 | `node cli.js draft <list\|save\|show\|post\|delete>` |
 | 查看日志 | `node cli.js log --tail 20` |
 
 **⚠️ 重要：增量获取评论优先使用 `--new`**

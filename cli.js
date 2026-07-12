@@ -132,6 +132,24 @@ Douyin Comment CLI (Bridge Framework)
   node cli.js factcheck "<文本>"               推广评论发布前事实校验（star 数/仓库名/版本号 vs repo-info 缓存）
   node cli.js campaign <create|plan|run|stop|pause|resume|status|list>  推广引擎（跨视频可暂停可恢复；run --daemon 后台）
 
+  AI 回复生成（ReplyEngine）：
+  node cli.js getReply <aweme_id>                    生成视频的顶级评论
+  node cli.js getReply <aweme_id> <cid>              生成对特定评论的回复
+  node cli.js getReply <aweme_id> --count N           生成多条候选评论
+  node cli.js getReply <aweme_id> --persona <id>      指定人格
+  node cli.js getReply <aweme_id> --batch             批量生成回复（对未回复评论）
+  node cli.js getReply <aweme_id> <cid> --interactive  交互式审核（生成→编辑→发布）
+
+  草稿管理：
+  node cli.js draft list [--video <aweme_id>]        列出待发布草稿
+  node cli.js draft save <aweme_id> "文本" [--reply-to <cid>] [--persona <id>]  保存草稿
+  node cli.js draft show <draft_id>                   查看草稿
+  node cli.js draft post <draft_id>                   发布草稿
+  node cli.js draft delete <draft_id>                 删除草稿
+
+  node cli.js comment <cid>                           查询单条评论实体
+  node cli.js validate-prompts [<template>]           校验提示词模板格式
+
   通用选项： --raw（原始输出） --no-log（本次不记录日志）
 
   前置条件：

@@ -13,17 +13,22 @@
 - `server.js` — Bridge Server 入口（WebSocket + HTTP API）
 - `lib/audit.js` — 审计日志模块（操作记录/结果持久化/增量查询）→ v3 起对 SQLite 双写
 - `lib/dashboard.js` — HTML 仪表盘生成（Chart.js）
-- `lib/llm.js` — OpenAI-compatible LLM 客户端
+- `lib/llm.js` — OpenAI-compatible LLM 客户端（支持视觉/多模态）
+- `lib/personas.js` — 7 种评论人格模板
 - `lib/commands/` — CLI 命令模块（每个命令独立文件）
 - `lib/memory/` — **v3 持久化记忆层**（SQLite 单例 / 事件流；P2 实体表 / P3 语料 / P4 campaigns 均已完成）
 - `lib/risk-control.js` — **请求节奏守卫 + P4 自适应风控**（enforceDelay / adaptiveInterval / preflightPublish）
 - `lib/commands/campaign.js` — **P4 推广引擎命令族**（create/plan/run[--daemon]/stop/pause/resume/status/list）
 - `lib/dashboard.js` — HTML 仪表盘生成（Chart.js + P4 推广活动进度卡片）
+- `lib/reply-engine/` — **多模态评论生成引擎**（视频上下文 / prompt 构建 / 截图提取）
+  - `video-context.js` — 视频详情获取 + ffmpeg 截图 + base64 编码
+  - `prompt-builder.js` — 模板加载 + prompt 组装 + 图片注入
+- `prompts/` — **可编辑 prompt 模板**（suggest.md / analyze.md）
 - `lib/server/` — Bridge Server 核心（registry / router / ws-hub）
 - `lib/client/` — HTTP 客户端封装（CLI / SDK 共用）
 - `lib/shared/` — 共享协议定义 + 序列化工具
 - `storage/douyin.db` — **v3 SQLite 数据库**（WAL，gitignore）
-- `config.json` — Bridge 连接 + LLM 配置
+- `config.json` — Bridge 连接 + LLM + 多模态配置
 - `package.json` — 依赖：`ws` + `better-sqlite3`（v3）
 - `scripts/douyin.user.js` — 油猴脚本（GM_xmlhttpRequest 绕过 PNA，注入 __bridge API）
 - `scripts/_template.user.js` — 油猴脚本模板（新站点参考）
@@ -54,8 +59,8 @@ Bridge Server 代码已本地化（server.js + lib/server/ + lib/client/ + lib/s
 | `node cli.js like <id> [--unlike]` | 点赞/取消点赞视频 |
 | `node cli.js delete-comment <cid>` | 删除评论 |
 | `node cli.js download <id> [--audio-only] [--out <dir>]` | 下载视频（含音频） |
-| `node cli.js analyze <id>` | LLM 分析评论 |
-| `node cli.js suggest <id> [--auto] [--min-priority N]` | LLM 回复建议 |
+| `node cli.js analyze <id> [--mode text-only|screenshots|video] [--screenshots N]` | LLM 分析评论（支持多模态视频理解） |
+| `node cli.js suggest <id> [--auto] [--min-priority N] [--mode text-only|screenshots|video] [--screenshots N]` | LLM 回复建议（支持多模态视频理解） |
 | `node cli.js dashboard [--video <id>] [--days N]` | 运营仪表盘 |
 | `node cli.js log [--tail N] [--video <id>] [--failed]` | 操作日志 |
 | `node cli.js profile <uid>` | 用户交互历史 |
@@ -77,6 +82,70 @@ Bridge Server 代码已本地化（server.js + lib/server/ + lib/client/ + lib/s
 - **删除评论** — 只能删除自己的评论，接口 `/comment/delete?cid=`，POST 无 body
 - **视频下载** — 通过 `/aweme/detail/` 获取视频详情，`play_addr` / `bit_rate` 提取视频 URL，`music.play_url` 提取 BGM；下载保存到 `./downloads/`（已 gitignore）
 - **零 npm 依赖** — ~~安装后无需 `npm install`~~ → v3 起需 `npm install`（新增 `better-sqlite3`，原生模块需要预编译）
+
+---
+
+## 多模态评论生成（新增）
+
+> 参考 xiaohongshu-cli 多模态架构重构，适配抖音视频场景。
+
+### 三种模式
+
+| 模式 | CLI flag | 说明 |
+|------|----------|------|
+| `text-only` | `--mode text-only` | 仅视频标题+点赞数+描述等文本信息（默认，向后兼容） |
+| `screenshots` | `--mode screenshots` | 提取视频多帧截图 → base64 → 注入支持视觉的 LLM |
+| `video` | `--mode video` | 传递视频 URL 给支持视频输入的 LLM |
+
+**始终包含基本文本**：标题、作者、点赞/评论/播放统计、BGM、内容摘要。
+
+### 配置（config.json）
+
+```json
+{
+  "multimodal": {
+    "mode": "text-only",
+    "screenshotCount": 4,
+    "autoScreenshotRatio": 0.7
+  }
+}
+```
+
+- `mode`：默认模式，CLI `--mode` 参数覆盖
+- `screenshotCount`：截图数量（2-10）
+- `autoScreenshotRatio`：`auto` 模式下使用 vision 的概率
+
+### 截图提取流程
+
+1. Bridge `getDetail` → 获取视频 URL
+2. `ffprobe` 获取视频时长
+3. `ffmpeg -vf fps=1/N` 均匀取帧（跳过首尾 1s）
+4. 缩放至 1024 宽，JPEG q=5
+5. 编码为 data:image/jpeg;base64 注入 LLM API
+6. `DOUYIN_DISABLE_VISION=1` 可强制禁用视觉
+
+### 文件结构
+
+```
+lib/reply-engine/
+  video-context.js    — 视频详情 + ffmpeg 截图 + base64
+  prompt-builder.js   — 模板加载 + prompt 组装 + 截图注入
+prompts/
+  suggest.md          — 回复建议模板（含视频上下文占位符）
+  analyze.md          — 评论分析模板（含视频上下文占位符）
+```
+
+### 环境变量
+
+| 变量 | 用途 |
+|------|------|
+| `DOUYIN_DISABLE_VISION=1` | 禁用所有视觉输入 |
+
+### Watch out for
+- **screenshots 模式依赖 ffmpeg** — 确保系统安装了 ffmpeg 和 ffprobe
+- **截图是流式提取**（不下载完整视频），但 ffmpeg 仍会缓冲部分数据
+- **截图缓存**：`.screenshots/` 目录临时存储截图，下次同名 aweme_id 会覆盖
+- **模型必须支持视觉** — 如果使用不支持 vision 的模型（如 DeepSeek 纯文本版），screenshots/video 模式自动降级到 text-only
 
 ---
 

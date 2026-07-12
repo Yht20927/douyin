@@ -17,10 +17,15 @@
     "tampermonkey", "cli", "sqlite"
   ],
   "main": "cli.js",
+  "bin": {
+    "dy": "./cli.js"
+  },
   "engines": {
     "node": ">=18"
   },
   "scripts": {
+    "server": "node server.js",
+    "help": "node cli.js help",
     "search": "node cli.js search",
     "get": "node cli.js get",
     "post": "node cli.js post",
