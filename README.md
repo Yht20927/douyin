@@ -44,6 +44,8 @@ cp config.example.json config.json
 node server.js
 
 # 3. Chrome 安装油猴脚本 scripts/douyin.user.js
+#    ⚠️ Chrome 用户：需先在 Tampermonkey 中启用"允许访问文件网址"
+#    详见下方「疑难排解」→ Chrome 连接问题
 #    打开 douyin.com 并登录
 
 # 4. 验证连接
@@ -354,6 +356,46 @@ douyin-cli/
 - `better-sqlite3` — SQLite
 - Chrome + Tampermonkey + 油猴脚本
 - LLM API key（OpenAI 兼容或 Anthropic 原生）
+
+---
+
+## 🔧 疑难排解
+
+### Chrome 连接问题（Firefox 正常但 Chrome 无法连接）
+
+**现象**：`node cli.js my` 报错 `Bridge Server 未启动` 或 `Request timeout`，但 Bridge Server 确实在运行，且 Firefox 浏览器连接正常。
+
+**原因**：Chrome 的 Private Network Access（PNA）安全策略会阻止公网站点（`douyin.com`）访问本地地址（`127.0.0.1`）。油猴脚本通过 `GM_xmlhttpRequest` 绕过此限制，但需要 Tampermonkey 扩展获得相应权限。
+
+**解决步骤**：
+
+1. 在 Chrome 中打开 Tampermonkey 扩展，确保 **"允许访问文件网址"** 已开启：
+   - 打开 `chrome://extensions/`
+   - 找到 **Tampermonkey** → 点击 **详情**
+   - 开启 ✅ **允许访问文件网址（Allow access to file URLs）**
+   
+   参考文档：https://www.tampermonkey.net/faq.php?q=Q209#Q209
+
+2. 确保油猴脚本的 `@connect` 权限已授权：
+   - 打开 Tampermonkey 管理面板 → 找到 **"Bridge: Douyin"** 脚本
+   - 切换到 **设置** 标签 → **用户连接（User connections）**
+   - 确认 `127.0.0.1` 和 `localhost` 均为 **允许（Allow）**
+
+3. 刷新 `douyin.com` 页面，打开 F12 → Console，确认看到：
+   ```
+   [Bridge] ✓ Registered with Bridge Server
+   ```
+
+4. 验证连接：`node cli.js my`
+
+### 其他常见问题
+
+| 现象 | 可能原因 | 解决 |
+|------|----------|------|
+| `Unauthorized` | token 不匹配 | 检查 `config.json` 和油猴脚本中的 `token` 是否一致 |
+| `抖音返回了 HTML 页面` | 登录态失效 | 刷新 `douyin.com` 并重新登录 |
+| `Request timeout` | 浏览器未打开 douyin.com | 确保已打开并登录抖音 |
+| 写操作频繁失败 | 触发风控 | 等待 30 分钟后再试，检查 `preflight` 状态 |
 
 ---
 

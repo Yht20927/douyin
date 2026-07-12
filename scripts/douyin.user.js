@@ -5,6 +5,9 @@
 // @grant        GM_xmlhttpRequest
 // @grant        unsafeWindow
 // @connect      127.0.0.1
+// @connect      127.0.0.1:*
+// @connect      localhost
+// @connect      localhost:*
 // ==/UserScript==
 
 // ═══════════════════════════════════════════════════════════
