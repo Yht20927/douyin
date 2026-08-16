@@ -396,6 +396,7 @@ douyin-cli/
 | `抖音返回了 HTML 页面` | 登录态失效 | 刷新 `douyin.com` 并重新登录 |
 | `Request timeout` | 浏览器未打开 douyin.com | 确保已打开并登录抖音 |
 | 写操作频繁失败 | 触发风控 | 等待 30 分钟后再试，检查 `preflight` 状态 |
+| `Request body too large`（服务端日志） | 搜索结果等响应超过请求体上限 | 默认上限 64MB（`config.json` → `bridge.maxBodySize`，单位字节），一般无需调整；若仍触发可调大后重启 `node server.js` |
 
 ---
 

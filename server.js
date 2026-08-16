@@ -37,12 +37,14 @@ const wsHub = new WebSocketHub({
   heartbeatInterval: config.bridge.heartbeatInterval,
   heartbeatTimeout: config.bridge.heartbeatTimeout,
   heartbeatMaxFailures: config.bridge.heartbeatMaxFailures,
+  maxPayload: config.bridge.maxBodySize,
 });
 const router = new Router({
   registry,
   wsHub,
   requestTimeout: config.bridge.requestTimeout || 30000,
   token: config.bridge.token,
+  maxBodySize: config.bridge.maxBodySize,
 });
 
 // 创建 HTTP Server
