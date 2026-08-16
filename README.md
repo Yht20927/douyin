@@ -3,7 +3,7 @@
 [![test](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml/badge.svg)](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> 适用版本: v4 · 最后更新: 2026-07-12 · 维护者: Yht20927
+> 适用版本: v4 · 最后更新: 2026-08-16 · 维护者: Yht20927
 
 > 抖音评论运营 CLI 工具。基于 Bridge Framework（Bridge Server + 油猴脚本），支持视频搜索、评论获取、**AI 人格化回复**、**ReplyEngine 独立生成**、**草稿管理**、运营仪表盘。
 
