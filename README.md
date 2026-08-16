@@ -11,6 +11,20 @@
 
 ---
 
+## 🌐 同系列项目（Bridge Framework 全家桶）
+
+同一套 Bridge Server + 油猴脚本架构的姊妹项目，欢迎 Star 与交流：
+
+| 项目 | 一句话简介 |
+|------|-----------|
+| [BossZhipin-cli](https://github.com/Yht20927/BossZhipin-cli) | BOSS 直聘命令行工具：搜索职位、智能匹配评分、LLM 批量打招呼 |
+| [xiaohongshu-cli](https://github.com/Yht20927/xiaohongshu-cli) | 小红书评论 CLI：笔记搜索、评论获取、AI 人格化回复、行为模拟 |
+| [douyin-living](https://github.com/Yht20927/douyin-living) | 抖音直播全自动录制 + AI 智能切片系统（录制 → 弹幕 → 语音识别 → 高光剪辑） |
+| [tiktok-cli](https://github.com/Yht20927/tiktok-cli) | TikTok 评论 CLI：视频搜索、评论获取、AI 回复（参考 douyin-cli 架构） |
+| [ths-cli](https://github.com/Yht20927/ths-cli) | 同花顺行情命令行工具：实时行情、K 线、多因子技术分析 |
+
+---
+
 ## ✨ 核心功能
 
 | 功能 | 说明 |
