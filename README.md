@@ -3,7 +3,7 @@
 [![test](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml/badge.svg)](https://github.com/Yht20927/douyin-cli/actions/workflows/test.yml)
 [![License: MIT](https://img.shields.io/badge/License-MIT-yellow.svg)](https://opensource.org/licenses/MIT)
 
-> 适用版本: v4 · 最后更新: 2026-08-16 · 维护者: Yht20927
+> 适用版本: v4 · 最后更新: 2026-08-27 · 维护者: Yht20927
 
 > 抖音评论运营 CLI 工具。基于 Bridge Framework（Bridge Server + 油猴脚本），支持视频搜索、评论获取、**AI 人格化回复**、**ReplyEngine 独立生成**、**草稿管理**、运营仪表盘。
 
@@ -334,6 +334,7 @@ douyin-cli/
 │   │   └── llm-usage.js      # LLM Token 用量追踪（v4 新增）
 │   ├── shared/               # 共享工具
 │   │   ├── serialize.js / parseResponse.js / protocol.js
+│   │   ├── sanitize.js       # 评论清洗 / 引号剥离 / HTML 转义
 │   │   └── caseConvert.js    # camelCase → snake_case（v4 新增）
 │   ├── client/               # Bridge 客户端
 │   ├── server/               # WS Hub + Router + Registry
@@ -343,17 +344,20 @@ douyin-cli/
 │   ├── jitter.js             # 节奏与拟人化延迟
 │   ├── audit.js              # 审计日志（SQLite 双写）
 │   └── dashboard.js          # HTML 仪表盘
-├── prompts/                  # LLM Prompt 模板（用户可编辑，v4 新增）
+├── prompts/                  # LLM Prompt 模板（用户可编辑，单一真源）
 │   ├── analyze.md            # 评论分析 Prompt
 │   ├── suggest.md            # 回复建议 Prompt
 │   ├── comment.md            # 顶级评论生成 Prompt
 │   ├── reply.md              # 单条回复 Prompt
-│   └── replies-batch.md      # 批量回复 Prompt
+│   ├── replies-batch.md      # 批量回复 Prompt
+│   └── partial-*.md          # 跨模板共享策略块（A-F 策略等，validate-prompts 跳过）
 ├── scripts/
 │   ├── douyin.user.js        # 油猴脚本（页面 fetch + 参数随机化）
 │   ├── _template.user.js     # 新站点油猴模板
 │   └── bridge.sh             # Bridge Server 生命周期管理
-├── tests/                    # vitest（182 用例，15 文件）
+├── tests/                    # vitest（234 用例，21 文件）
+│   ├── server/               # Router 三路分发 / WS 心跳测试
+│   ├── shared/               # 共享工具测试
 │   ├── reply-engine/         # ReplyEngine 测试（v4 新增）
 │   ├── drafts.test.js        # 草稿测试（v4 新增）
 │   └── caseConvert.test.js   # caseConvert 测试（v4 新增）
